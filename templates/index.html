@@ -1,0 +1,109 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Generative AI-Powered Analysis Tool</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+    <main class="container">
+        <h1>Generative AI-Powered Analysis Tool for Excel Data</h1>
+
+        <section class="card">
+            <h2>Upload CSV or Excel</h2>
+            <form id="upload-form" enctype="multipart/form-data">
+                <input type="file" name="file" accept=".csv,.xlsx,.xls" required />
+                <button type="submit">Upload</button>
+            </form>
+            <div id="upload-status" class="status-message"></div>
+        </section>
+
+        <section class="card">
+            <h2>Chat with your data</h2>
+            <div class="chat-input">
+                <input type="text" id="questionInput" placeholder="Ask about your sales data..." />
+                <button id="askBtn" type="button">Ask</button>
+            </div>
+            <div id="chat" class="chat-window"></div>
+        </section>
+    </main>
+
+    <script>
+        const uploadForm = document.getElementById('upload-form');
+        const uploadStatus = document.getElementById('upload-status');
+        const askButton = document.getElementById('askBtn');
+        const questionInput = document.getElementById('questionInput');
+        const chatWindow = document.getElementById('chat');
+
+        uploadForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const formData = new FormData(uploadForm);
+
+            uploadStatus.textContent = 'Uploading...';
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || 'Upload failed');
+                }
+
+                uploadStatus.textContent = `File uploaded successfully. Columns: ${data.columns.join(', ')}`;
+                uploadStatus.classList.remove('error');
+            } catch (error) {
+                uploadStatus.textContent = error.message;
+                uploadStatus.classList.add('error');
+            }
+        });
+
+        function appendMessage(text, type) {
+            const message = document.createElement('div');
+            message.classList.add('chat-message', type === 'user' ? 'user-msg' : 'ai-msg');
+            message.textContent = text;
+            chatWindow.appendChild(message);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        askButton.addEventListener('click', async () => {
+            const question = questionInput.value.trim();
+            if (!question) {
+                return;
+            }
+
+            appendMessage(`You: ${question}`, 'user');
+            questionInput.value = '';
+
+            try {
+                const response = await fetch('/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ question }),
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to get answer');
+                }
+
+                appendMessage(`AI: ${data.answer}`, 'ai');
+            } catch (error) {
+                appendMessage(`Error: ${error.message}`, 'ai');
+            }
+        });
+
+        questionInput.addEventListener('keyup', (event) => {
+            if (event.key === 'Enter') {
+                askButton.click();
+            }
+        });
+    </script>
+</body>
+</html>
