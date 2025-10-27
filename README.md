@@ -1,5 +1,4 @@
-# Generative AI-Powered Analysis Tool for Excel Data# Generative AI-Powered Analysis Tool for Excel Data# Generative AI-Powered Analysis Tool for Excel Data# Generative AI-Powered Analysis Tool for Excel Data
-
+# Generative AI-Powered Analysis Tool for Excel Data#
 
 
 ![Demo Screenshot](demo-screenshot.png)
