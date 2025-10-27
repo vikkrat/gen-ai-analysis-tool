@@ -172,7 +172,7 @@ def answer_question(question: str) -> str:
         return "Please upload a CSV first."
 
     columns_info = "\n".join(f"- {col} ({dtype})" for col, dtype in zip(df.columns, df.dtypes))
-    head_preview = df.head(20).to_string(index=False)
+    full_data = df.to_string(index=False)
     describe_summary = df.describe(include="all").to_string()
     heuristics_output = basic_pandas_insights(df, question)
 
@@ -181,8 +181,8 @@ def answer_question(question: str) -> str:
         f"User question: {question}",
         "Dataset column information:",
         columns_info,
-        "Data sample (up to 20 rows):",
-        head_preview,
+        "Full dataset:",
+        full_data,
         "Descriptive statistics:",
         describe_summary,
     ]
